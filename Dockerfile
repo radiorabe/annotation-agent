@@ -25,9 +25,9 @@ RUN dnf install -y \
   && make \
   && make install
 
-# FROM centos:8
+FROM centos:8
 
-# COPY --from=build /usr/local/bin/audiowaveform /usr/bin/
+COPY --from=build /usr/local/bin/audiowaveform /usr/bin/
 
 RUN dnf install -y \
     epel-release \
