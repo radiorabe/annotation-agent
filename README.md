@@ -2,7 +2,7 @@
 
 The RaBe Annotation Agent is used to annotate audio files and other assets at RaBe. It is also an experiment in using linked data at [RaBe](https://rabe.ch).
 
-* is triggered via several key on a amqp topic
+* is triggered via several keys on a amqp topic
 * downloads files from [our archive](https://archiv.rabe.ch)
 * stores [speech/music segmentation](https://github.com/bbc/bbc-vamp-plugins) in annnotations
 * stores [audiowaveform](https://github.com/bbc/audiowaveform) dat files in an object store and links them with files via an annotation
@@ -38,7 +38,7 @@ pre-commit run -a
 
 Create a git tag and push it to this repo or use the git web ui.
 
-This is build on GitHub Actions and uses a `GH_PAT_TOKEN` secret to work. The access key must
+This is built on GitHub Actions and uses a `GH_PAT_TOKEN` secret to work. The access key must
 have repo, read:packages, write:packages and delete:packages in it's scope.
 
 ## License
