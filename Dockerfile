@@ -52,7 +52,11 @@ RUN curl -s -o /tmp/sonic-annotator.tar.gz \
     /tmp/sonic-annotator.tar.gz \
     /tmp/sonic-annotator-$SONIC_ANNOTATOR_VERSION-linux64-static \
  && printf "#!/bin/bash\ncd /opt/sonic-annotator/\nexec ./AppRun \"\$@\"\n" >  /usr/bin/sonic-annotator \
- && chmod +x /usr/bin/sonic-annotator
+ && find /opt/sonic-annotator -type d -exec chmod go+rx {} \; \
+ && chmod go+rx \
+    /usr/bin/sonic-annotator \
+    /opt/sonic-annotator/AppRun \
+    /opt/sonic-annotator/usr/bin/sonic-annotator
 
 ARG BBC_VAMP_PLUGIN_VERSION=1.1
 
