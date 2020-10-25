@@ -273,6 +273,9 @@ func (a *Annotator) LoadSegments(uri string, files []*models.AudioFile, record *
 		if err != nil {
 			log.WithError(err).Fatal()
 		}
+		if end != 0 {
+			end = start + end
+		}
 		if end == 0 {
 			// we assume that it must be that last line that has no end since it lasts until the end of the file
 			s, err := time.Parse(time.RFC3339, record.Attributes.FinishedAt.String())
