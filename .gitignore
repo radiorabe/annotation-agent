@@ -1,0 +1,6 @@
+tmp/
+minio-data/
+.env
+dist/
+pgdata/
+docker-compose.override.yml

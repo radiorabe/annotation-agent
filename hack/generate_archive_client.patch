@@ -1,0 +1,132 @@
+diff --git a/annotator/archive/raar/swagger.json b/annotator/archive/raar/swagger.json
+index 8fddfe7..2f8add4 100644
+--- a/annotator/archive/raar/swagger.json
++++ b/annotator/archive/raar/swagger.json
+@@ -287,6 +287,82 @@
+                 ]
+             }
+         },
++        "/broadcasts/{year}/{month}/{day}": {
++            "get": {
++                "description": "Returns a list of broadcasts at the given date/time span.",
++                "tags": [
++                    "broadcast",
++                    "public"
++                ],
++                "parameters": [
++                    {
++                        "name": "year",
++                        "in": "path",
++                        "description": "The four-digit year to get the broadcasts for.",
++                        "required": true,
++                        "type": "integer"
++                    },
++                    {
++                        "name": "month",
++                        "in": "path",
++                        "description": "Optional two-digit month to get the broadcasts for. Requires all preceeding parameters.",
++                        "required": true,
++                        "type": "integer"
++                    },
++                    {
++                        "name": "day",
++                        "in": "path",
++                        "description": "Optional two-digit day to get the broadcasts for. Requires all preceeding parameters.",
++                        "required": true,
++                        "type": "integer"
++                    },
++                    {
++                        "$ref": "#/parameters/q"
++                    },
++                    {
++                        "$ref": "#/parameters/page_number"
++                    },
++                    {
++                        "$ref": "#/parameters/page_size"
++                    },
++                    {
++                        "$ref": "#/parameters/sort"
++                    }
++                ],
++                "responses": {
++                    "200": {
++                        "description": "successfull operation",
++                        "schema": {
++                            "properties": {
++                                "data": {
++                                    "type": "array",
++                                    "items": {
++                                        "$ref": "#/definitions/Broadcast"
++                                    }
++                                },
++                                "included": {
++                                    "type": "array",
++                                    "items": {
++                                        "$ref": "#/definitions/Show"
++                                    }
++                                }
++                            }
++                        }
++                    }
++                },
++                "security": [
++                    {
++                        "http_token": []
++                    },
++                    {
++                        "api_token": []
++                    },
++                    {
++                        "access_code": []
++                    }
++                ]
++            }
++        },
+         "/broadcasts/{year}/{month}/{day}/{hour}{minute}{second}": {
+             "get": {
+                 "description": "Returns a list of broadcasts at the given date/time span.",
+@@ -2752,7 +2828,7 @@
+         "AudioFile": {
+             "properties": {
+                 "id": {
+-                    "type": "integer"
++                    "type": "string"
+                 },
+                 "type": {
+                     "type": "string"
+@@ -2797,7 +2873,7 @@
+         "Broadcast": {
+             "properties": {
+                 "id": {
+-                    "type": "integer"
++                    "type": "string"
+                 },
+                 "type": {
+                     "type": "string"
+@@ -2833,7 +2909,7 @@
+                                 "data": {
+                                     "properties": {
+                                         "id": {
+-                                            "type": "integer"
++                                            "type": "string"
+                                         },
+                                         "type": {
+                                             "type": "string"
+@@ -2863,7 +2939,7 @@
+         "Show": {
+             "properties": {
+                 "id": {
+-                    "type": "integer"
++                    "type": "string"
+                 },
+                 "type": {
+                     "type": "string"
+@@ -2969,7 +3045,7 @@
+         "User": {
+             "properties": {
+                 "id": {
+-                    "type": "integer"
++                    "type": "string"
+                 },
+                 "type": {
+                     "type": "string"

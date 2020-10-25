@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secure
+      POSTGRES_DB: annotations
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+    - 5672:5672
+    environment:
+      RABBITMQ_DEFAULT_VHOST: example-pubsub
+      RABBITMQ_DEFAULT_USER: pubsub
+      RABBITMQ_DEFAULT_PASS: pubsub
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server data
+  elucidate:
+    image: dlcs/elucidate-server:1.5.1
+    volumes:
+    - ./hack/docker-compose:/hack
+    command: /hack/elucidate.sh
+    environment:
+      BASE_SCHEME: "https"
+      BASE_HOST: "annnotations.api.rabe.ch"
+      BASE_PORT: "443"
+      BASE_PATH: "/v1"
+      DATABASE_URL: "jdbc:postgresql://database:5432/annotations"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "secure"
+      AUTH_ENABLED: "false"
+      AUTH_VERIFIER_TYPE: "secret"
+      AUTH_VERIFIER_KEY: "changeme"
+  agent:
+    build: .

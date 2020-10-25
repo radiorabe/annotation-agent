@@ -1,0 +1,3537 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.2",
+        "title": "RAAR Radio Archive API",
+        "description": "RAAR Radio Archive API. A public part allows querying shows, broadcasts and audio files. In the admin section, the archiving configuration may be managed.",
+        "license": {
+            "name": "AGPL"
+        }
+    },
+    "consumes": [
+        "application/vnd.api+json"
+    ],
+    "produces": [
+        "application/vnd.api+json"
+    ],
+    "securityDefinitions": {
+        "http_token": {
+            "type": "basic",
+            "description": "The API token may be passed as HTTP token authentication header: `Authorization: Token token=\"abc\"`. It may be obtained in the response body from a successfull /login request."
+        },
+        "api_token": {
+            "type": "apiKey",
+            "name": "api_token",
+            "in": "query",
+            "description": "The API token may be passed as a query parameter in the URL. It may be obtained in the response body from a successfull /login request."
+        },
+        "access_code": {
+            "type": "apiKey",
+            "name": "access_code",
+            "in": "query",
+            "description": "An access code may be passed as a query parameter in the URL. This manually obtained code allows a login as a guest user."
+        },
+        "jwt_token": {
+            "type": "basic",
+            "description": "JWT token is passed as HTTP token authentication header: `Authorization: Token token=\"abc\"`. A JWT token is required for the /admin section and may be obtained in the X-Auth-Token Header from a successfull /login request as admin."
+        }
+    },
+    "responses": {
+        "unprocessable_entity": {
+            "description": "unprocessable entity",
+            "schema": {
+                "properties": {
+                    "errors": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/UnprocessableEntity"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "parameters": {
+        "page_number": {
+            "name": "page[number]",
+            "in": "query",
+            "description": "The page number of the list.",
+            "required": false,
+            "type": "integer"
+        },
+        "page_size": {
+            "name": "page[size]",
+            "in": "query",
+            "description": "Maximum number of entries that are returned per page. Defaults to 50, maximum is 500.",
+            "required": false,
+            "type": "integer"
+        },
+        "sort": {
+            "name": "sort",
+            "in": "query",
+            "description": "Name of the sort field, optionally prefixed with a `-` for descending order.",
+            "required": false,
+            "type": "string"
+        },
+        "q": {
+            "name": "q",
+            "in": "query",
+            "description": "Query string to search for.",
+            "required": false,
+            "type": "string"
+        }
+    },
+    "paths": {
+        "/broadcasts/{broadcast_id}/audio_files": {
+            "get": {
+                "description": "Returns a list of available audio files for a given broadcast.",
+                "tags": [
+                    "audio_file",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "broadcast_id",
+                        "in": "path",
+                        "description": "Id of the broadcast to list the audio files for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/AudioFile"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/audio_files/{year}/{month}/{day}/{hour}{minute}{second}_{playback_format}.{format}": {
+            "get": {
+                "description": "Returns an audio file in the requested format.",
+                "produces": [
+                    "audio/flac",
+                    "audio/mpeg"
+                ],
+                "tags": [
+                    "audio_file",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "Four-digit year to get the audio file for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "description": "Two-digit month to get the audio file for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "description": "Two-digit day to get the audio file for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "hour",
+                        "in": "path",
+                        "description": "Two-digit hour to get the audio file for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "minute",
+                        "in": "path",
+                        "description": "Two-digit minute to get the audio file for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "second",
+                        "in": "path",
+                        "description": "Optional two-digit second to get the audio file for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "playback_format",
+                        "in": "path",
+                        "description": "Name of the playback format to get the audio file for. Use 'best' to get the best available quality.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "File extension of the audio encoding to get the audio file for.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "download",
+                        "in": "query",
+                        "description": "Authorized users may pass this flag to get the file with Content-Disposition attachment.",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/broadcasts": {
+            "get": {
+                "description": "Searches and returns a list of broadcasts.",
+                "tags": [
+                    "broadcast",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Broadcast"
+                                    }
+                                },
+                                "included": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Show"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/broadcasts/{year}/{month}/{day}": {
+            "get": {
+                "description": "Returns a list of broadcasts at the given date/time span.",
+                "tags": [
+                    "broadcast",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "The four-digit year to get the broadcasts for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "description": "Optional two-digit month to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "description": "Optional two-digit day to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Broadcast"
+                                    }
+                                },
+                                "included": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Show"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/broadcasts/{year}/{month}/{day}/{hour}{minute}{second}": {
+            "get": {
+                "description": "Returns a list of broadcasts at the given date/time span.",
+                "tags": [
+                    "broadcast",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "The four-digit year to get the broadcasts for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "description": "Optional two-digit month to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "description": "Optional two-digit day to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "hour",
+                        "in": "path",
+                        "description": "Optional two-digit hour to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "minute",
+                        "in": "path",
+                        "description": "Optional two-digit minute to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "second",
+                        "in": "path",
+                        "description": "Optional two-digit second to get the broadcasts for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Broadcast"
+                                    }
+                                },
+                                "included": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Show"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/shows/{show_id}/broadcasts": {
+            "get": {
+                "description": "Returns a list of broadcasts of the given show.",
+                "tags": [
+                    "broadcast",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "show_id",
+                        "in": "path",
+                        "description": "ID of the show to list the broadcasts for",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Broadcast"
+                                    }
+                                },
+                                "included": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Show"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/broadcasts/{id}": {
+            "get": {
+                "description": "Returns a single broadcast.",
+                "tags": [
+                    "broadcast"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the broadcast to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Broadcast"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates the description of an an existing broadcast.",
+                "tags": [
+                    "broadcast"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the broadcast to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the broadcast to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Broadcast"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Broadcast"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/login": {
+            "get": {
+                "description": "Get the user object of the currently logged in user. The user may be identified by an API token, an access code, a JWT token or over FreeIPA.",
+                "tags": [
+                    "user"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "not authorized"
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    },
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Login with the FreeIPA username and password. Returns the user object including the api_token for further requests. If the user has admin priviledges, a X-Auth-Token header with a JWT token is returned to be used in the /admin section.",
+                "tags": [
+                    "user"
+                ],
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "formData",
+                        "description": "The username of the user to login.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "The password of the user to login.",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "not authorized"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Regenerates the api key of the current FreeIPA user.",
+                "tags": [
+                    "user"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "not authorized"
+                    }
+                }
+            }
+        },
+        "/shows": {
+            "get": {
+                "description": "Searches and returns a list of shows.",
+                "tags": [
+                    "show",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "name": "since",
+                        "description": "Filter the shows by date of their last broadcast.",
+                        "format": "date",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Show"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/shows/{id}": {
+            "get": {
+                "description": "Returns a single show.",
+                "tags": [
+                    "show",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the show to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Show"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/tracks": {
+            "get": {
+                "description": "Returns a list of tracks.",
+                "tags": [
+                    "track",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Track"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new track.",
+                "tags": [
+                    "track"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the track to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/tracks/{id}": {
+            "get": {
+                "description": "Returns a single track.",
+                "tags": [
+                    "track",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the track to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing track.",
+                "tags": [
+                    "track"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the track to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the track to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing track.",
+                "tags": [
+                    "track"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the track to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/tracks/{year}/{month}/{day}/{hour}{minute}{second}": {
+            "get": {
+                "description": "Returns a list of tracks at the given date/time span.",
+                "tags": [
+                    "track",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "The four-digit year to get the tracks for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "description": "Optional two-digit month to get the tracks for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "description": "Optional two-digit day to get the tracks for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "hour",
+                        "in": "path",
+                        "description": "Optional two-digit hour to get the tracks for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "minute",
+                        "in": "path",
+                        "description": "Optional two-digit minute to get the tracks for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "second",
+                        "in": "path",
+                        "description": "Optional two-digit second to get the tracks for. Requires all preceeding parameters.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/shows/{show_id}/tracks": {
+            "get": {
+                "description": "Returns a list of tracks of the given show.",
+                "tags": [
+                    "track",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "show_id",
+                        "in": "path",
+                        "description": "ID of the show to list the tracks for",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/broadcasts/{broadcast_id}/tracks": {
+            "get": {
+                "description": "Returns a list of tracks of the given broadcast.",
+                "tags": [
+                    "track",
+                    "public"
+                ],
+                "parameters": [
+                    {
+                        "name": "broadcast_id",
+                        "in": "path",
+                        "description": "ID of the broadcast to list the tracks for",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Track"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "http_token": []
+                    },
+                    {
+                        "api_token": []
+                    },
+                    {
+                        "access_code": []
+                    }
+                ]
+            }
+        },
+        "/status": {
+            "get": {
+                "description": "Get the application status",
+                "tags": [
+                    "status",
+                    "public"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Status"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "(some) services unavailable",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Status"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/access_codes": {
+            "get": {
+                "description": "Returns a list of access codes.",
+                "tags": [
+                    "access_code",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3AAccessCode"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new access code.",
+                "tags": [
+                    "access_code",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the access code to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AAccessCode"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AAccessCode"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/access_codes/{id}": {
+            "get": {
+                "description": "Returns a single access code.",
+                "tags": [
+                    "access_code",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the access code to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AAccessCode"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing access code.",
+                "tags": [
+                    "access_code",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the access code to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the access code to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AAccessCode"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AAccessCode"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing access code.",
+                "tags": [
+                    "access_code",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the access code to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/profiles/{profile_id}/archive_formats": {
+            "get": {
+                "description": "Returns a list of archive formats.",
+                "tags": [
+                    "archive_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this archive format belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3AArchiveFormat"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new archive format.",
+                "tags": [
+                    "archive_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this archive format belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the archive format to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AArchiveFormat"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AArchiveFormat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/profiles/{profile_id}/archive_formats/{id}": {
+            "get": {
+                "description": "Returns a single archive format.",
+                "tags": [
+                    "archive_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this archive format belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the archive format to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AArchiveFormat"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing archive format.",
+                "tags": [
+                    "archive_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this archive format belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the archive format to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the archive format to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AArchiveFormat"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AArchiveFormat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing archive format.",
+                "tags": [
+                    "archive_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this archive format belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the archive format to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/audio_encodings": {
+            "get": {
+                "description": "Returns a list of available audio encodings.",
+                "tags": [
+                    "audio_encoding",
+                    "admin"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3AAudioEncoding"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/profiles/{profile_id}/archive_formats/{archive_format_id}/downgrade_actions": {
+            "get": {
+                "description": "Returns a list of downgrade actions.",
+                "tags": [
+                    "downgrade_action",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this downgrade action belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "archive_format_id",
+                        "description": "ID of the archive format this downgrade actions belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3ADowngradeAction"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new downgrade action.",
+                "tags": [
+                    "downgrade_action",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this downgrade action belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "archive_format_id",
+                        "description": "ID of the archive format this downgrade actions belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the downgrade action to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3ADowngradeAction"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3ADowngradeAction"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/profiles/{profile_id}/archive_formats/{archive_format_id}/downgrade_actions/{id}": {
+            "get": {
+                "description": "Returns a single downgrade action.",
+                "tags": [
+                    "downgrade_action",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this downgrade action belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "archive_format_id",
+                        "description": "ID of the archive format this downgrade actions belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the downgrade action to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3ADowngradeAction"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing downgrade action.",
+                "tags": [
+                    "downgrade_action",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this downgrade action belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "archive_format_id",
+                        "description": "ID of the archive format this downgrade actions belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the downgrade action to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the downgrade action to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3ADowngradeAction"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3ADowngradeAction"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing downgrade action.",
+                "tags": [
+                    "downgrade_action",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "profile_id",
+                        "description": "ID of the profile this downgrade action belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "archive_format_id",
+                        "description": "ID of the archive format this downgrade actions belongs to.",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the downgrade action to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/playback_formats": {
+            "get": {
+                "description": "Returns a list of playback formats.",
+                "tags": [
+                    "playback_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3APlaybackFormat"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new playback format.",
+                "tags": [
+                    "playback_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the playback format to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3APlaybackFormat"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3APlaybackFormat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/playback_formats/{id}": {
+            "get": {
+                "description": "Returns a single playback format.",
+                "tags": [
+                    "playback_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the playback format to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3APlaybackFormat"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing playback format.",
+                "tags": [
+                    "playback_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the playback format to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the playback format to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3APlaybackFormat"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3APlaybackFormat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing playback format.",
+                "tags": [
+                    "playback_format",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the playback format to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/profiles": {
+            "get": {
+                "description": "Returns a list of profiles.",
+                "tags": [
+                    "profile",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3AProfile"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new profile.",
+                "tags": [
+                    "profile",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the profile to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AProfile"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AProfile"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/profiles/{id}": {
+            "get": {
+                "description": "Returns a single profile.",
+                "tags": [
+                    "profile",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the profile to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AProfile"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing profile.",
+                "tags": [
+                    "profile",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the profile to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the profile to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AProfile"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AProfile"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing profile.",
+                "tags": [
+                    "profile",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the profile to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/shows": {
+            "get": {
+                "description": "Returns a list of shows.",
+                "tags": [
+                    "show",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3AShow"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new show.",
+                "tags": [
+                    "show",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the show to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AShow"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AShow"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/shows/{id}": {
+            "get": {
+                "description": "Returns a single show.",
+                "tags": [
+                    "show",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the show to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AShow"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing show.",
+                "tags": [
+                    "show",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the show to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the show to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AShow"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AShow"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing show.",
+                "tags": [
+                    "show",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the show to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/stats/{year}/{month}": {
+            "get": {
+                "description": "Returns a CSV with various show and track statistics.",
+                "tags": [
+                    "stats",
+                    "admin"
+                ],
+                "produces": [
+                    "text/csv"
+                ],
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "The four-digit year to get the stats for.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "description": "Optional two-digit month to get the stats for.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CSV with header row, overall row and one row for each show that was broadcasted in the given period.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "description": "Returns a list of users.",
+                "tags": [
+                    "user",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/q"
+                    },
+                    {
+                        "$ref": "#/parameters/page_number"
+                    },
+                    {
+                        "$ref": "#/parameters/page_size"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Admin%3A%3AUser"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Creates a new user.",
+                "tags": [
+                    "user",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the user to create.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AUser"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AUser"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/users/{id}": {
+            "get": {
+                "description": "Returns a single user.",
+                "tags": [
+                    "user",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the user to fetch.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AUser"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Updates an existing user.",
+                "tags": [
+                    "user",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the user to update.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Attributes defining the user to update.",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AUser"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AUser"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Deletes an existing user.",
+                "tags": [
+                    "user",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the user to delete.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "successfull operation"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable_entity"
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        },
+        "/admin/shows/{id}/merge/{target_id}": {
+            "post": {
+                "description": "Moves all broadcasts of a show to another and then removes the show. Responds with the target show.",
+                "tags": [
+                    "show",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the show to merge.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "target_id",
+                        "in": "path",
+                        "description": "ID of the target show for the broadcasts.",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfull operation",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Admin%3A%3AShow"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwt_token": []
+                    }
+                ]
+            }
+        }
+    },
+    "definitions": {
+        "AudioFile": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "codec": {
+                            "type": "string"
+                        },
+                        "bitrates": {
+                            "type": "integer"
+                        },
+                        "channels": {
+                            "type": "integer"
+                        },
+                        "playback_format": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        },
+                        "play": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        },
+                        "download": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Broadcast": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "label": {
+                            "type": "string"
+                        },
+                        "started_at": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "finished_at": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "people": {
+                            "type": "string"
+                        },
+                        "details": {
+                            "type": "string"
+                        },
+                        "audio_access": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "relationships": {
+                    "properties": {
+                        "show": {
+                            "properties": {
+                                "data": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        },
+                        "update": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Show": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "details": {
+                            "type": "string"
+                        },
+                        "audio_access": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Status": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "api": {
+                            "type": "boolean"
+                        },
+                        "database": {
+                            "type": "boolean"
+                        },
+                        "file_system": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
+        "Track": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "artist": {
+                            "type": "string"
+                        },
+                        "started_at": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "finished_at": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "UnprocessableEntity": {
+            "properties": {
+                "source": {
+                    "properties": {
+                        "pointer": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "details": {
+                    "type": "string"
+                }
+            }
+        },
+        "User": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "username": {
+                            "type": "string"
+                        },
+                        "first_name": {
+                            "type": "string"
+                        },
+                        "last_name": {
+                            "type": "string"
+                        },
+                        "groups": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "api_token": {
+                            "type": "string",
+                            "readOnly": true
+                        },
+                        "api_key_expires_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "admin": {
+                            "type": "boolean",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::AccessCode": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "format": "date",
+                            "readOnly": true
+                        },
+                        "expires_at": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "creator_id": {
+                    "type": "integer",
+                    "readOnly": true
+                }
+            }
+        },
+        "Admin::ArchiveFormat": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "codec": {
+                            "type": "string",
+                            "description": "See audio_encodings for possible values. This attribute may only be set on creation."
+                        },
+                        "initial_bitrate": {
+                            "type": "integer",
+                            "description": "The bitrate audio files are converted to when they are initially imported into the archive. See audio_encodings of selected codec for possible values."
+                        },
+                        "initial_channels": {
+                            "type": "integer",
+                            "description": "The number of channels audio files will have when they are initially imported into the archive. See audio_encodings of selected codec for possible values."
+                        },
+                        "max_public_bitrate": {
+                            "type": "integer",
+                            "description": "The maximal bitrate that is available for public, non-logged in users. Use 0 for no access at all, nil for full access. See audio_encodings of selected codec for possible values."
+                        },
+                        "max_logged_in_bitrate": {
+                            "type": "integer",
+                            "description": "The maximal bitrate that is available for logged in or guest users. Use 0 for no access at all, nil for full access. See audio_encodings of selected codec for possible values."
+                        },
+                        "max_priviledged_bitrate": {
+                            "type": "integer",
+                            "description": "The maximal bitrate that is available for logged-in users in agiven group. Use 0 for no access at all, nil for full access. See audio_encodings of selected codec for possible values."
+                        },
+                        "priviledged_groups": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "The user group names that have access to the priviledged bitrate."
+                        },
+                        "download_permission": {
+                            "type": "string",
+                            "enum": [
+                                "public",
+                                "logged_in",
+                                "priviledged",
+                                "admin"
+                            ],
+                            "description": "Defines which users may download audio files."
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "creator_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        },
+                        "updater_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::AudioEncoding": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "codec": {
+                            "type": "string"
+                        },
+                        "file_extension": {
+                            "type": "string"
+                        },
+                        "mime_type": {
+                            "type": "string"
+                        },
+                        "bitrates": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "description": "Possible bitrates in kbps."
+                        },
+                        "channels": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "description": "Possible number of channels."
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::DowngradeAction": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "months": {
+                            "type": "integer"
+                        },
+                        "bitrate": {
+                            "type": "integer",
+                            "description": "See audio_encodings of archive_format.codec for possible values.Set to null to entirely delete the files after this many months."
+                        },
+                        "channels": {
+                            "type": "integer",
+                            "description": "See audio_encodings for archive_format.codec for possible values.Set to null to entirely delete the files after this many months."
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "creator_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        },
+                        "updater_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::PlaybackFormat": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name used in audio URLs, only allows a-z, 0-9 and _."
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "codec": {
+                            "type": "string",
+                            "description": "See audio_encodings for possible values."
+                        },
+                        "bitrate": {
+                            "type": "integer",
+                            "description": "See audio_encodings of selected codec for possible values."
+                        },
+                        "channels": {
+                            "type": "integer",
+                            "description": "See audio_encodings of selected codec for possible values."
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "creator_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        },
+                        "updater_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::Profile": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "default": {
+                            "type": "boolean"
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "creator_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        },
+                        "updater_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::Show": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "details": {
+                            "type": "string"
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "creator_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        },
+                        "updater_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "relationships": {
+                    "properties": {
+                        "profile": {
+                            "properties": {
+                                "data": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        },
+        "Admin::User": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "properties": {
+                        "username": {
+                            "type": "string"
+                        },
+                        "first_name": {
+                            "type": "string"
+                        },
+                        "last_name": {
+                            "type": "string"
+                        },
+                        "groups": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "admin": {
+                            "type": "boolean",
+                            "readOnly": true
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "readOnly": true
+                        },
+                        "creator_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        },
+                        "updater_id": {
+                            "type": "integer",
+                            "readOnly": true
+                        }
+                    }
+                },
+                "links": {
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url",
+                            "readOnly": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "host": "archiv.rabe.ch",
+    "basePath": "/api"
+}

@@ -1,0 +1,30 @@
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix vamp:     <http://purl.org/ontology/vamp/> .
+@prefix :         <#> .
+
+:transform a vamp:Transform ;
+    vamp:plugin <http://vamp-plugins.org/rdf/plugins/bbc-vamp-plugins#bbc-speechmusic-segmenter> ;
+    vamp:step_size "1024"^^xsd:int ;
+    vamp:block_size "1024"^^xsd:int ;
+    vamp:plugin_version """1""" ;
+    vamp:parameter_binding [
+        vamp:parameter [ vamp:identifier "change_threshold" ] ;
+        vamp:value "0.0781"^^xsd:float ;
+    ] ;
+    vamp:parameter_binding [
+        vamp:parameter [ vamp:identifier "decision_threshold" ] ;
+        vamp:value "0.2734"^^xsd:float ;
+    ] ;
+    vamp:parameter_binding [
+        vamp:parameter [ vamp:identifier "margin" ] ;
+        vamp:value "14"^^xsd:float ;
+    ] ;
+    vamp:parameter_binding [
+        vamp:parameter [ vamp:identifier "min_music_length" ] ;
+        vamp:value "0"^^xsd:float ;
+    ] ;
+    vamp:parameter_binding [
+        vamp:parameter [ vamp:identifier "resolution" ] ;
+        vamp:value "256"^^xsd:float ;
+    ] ;
+    vamp:output <http://vamp-plugins.org/rdf/plugins/bbc-vamp-plugins#bbc-speechmusic-segmenter_output_segmentation> .
