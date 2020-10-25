@@ -2,11 +2,11 @@
 
 The RaBe Annotation Agent is used to annotate audio files and other assets at RaBe. It is also an experiment in using linked data at [RaBe](https://rabe.ch).
 
-* Is triggered via several key on a amqp topic
-* Downloads files from [our archive](https://archiv.rabe.ch)
-* Stores speech/music segmentation in annnotations
-* Stores [audiowaveform]() dat files in an object store and links them with files via an annotation
-* Receives Events from [acrcloud](https://acrcloud.api.rabe.ch) and links them with a show (unfinished, doesn't work yet)
+* is triggered via several key on a amqp topic
+* downloads files from [our archive](https://archiv.rabe.ch)
+* stores [speech/music segmentation](https://github.com/bbc/bbc-vamp-plugins) in annnotations
+* stores [audiowaveform](https://github.com/bbc/audiowaveform) dat files in an object store and links them with files via an annotation
+* receives events from [acrcloud](https://acrcloud.api.rabe.ch) and links them with a show (unfinished, doesn't work yet)
 
 ## Development
 
