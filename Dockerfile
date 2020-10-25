@@ -33,6 +33,10 @@ RUN dnf install -y \
     epel-release \
  && dnf install -y \
     --enablerepo PowerTools \
+    boost-filesystem \
+    boost-program-options \
+    boost-regex \
+    gd \
     libid3tag \
     libmad \
     libsndfile \
