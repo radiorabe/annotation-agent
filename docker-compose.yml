@@ -38,4 +38,4 @@ services:
       AUTH_VERIFIER_TYPE: "secret"
       AUTH_VERIFIER_KEY: "changeme"
   agent:
-    build: .
+    image: ghcr.io/radiorabe/annotation-agent:latest
