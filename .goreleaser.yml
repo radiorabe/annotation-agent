@@ -38,4 +38,4 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
     extra_files:
-      - etc/passwd
+      - assets/
