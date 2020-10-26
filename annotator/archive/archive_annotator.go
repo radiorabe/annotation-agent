@@ -186,6 +186,7 @@ func (a *Annotator) LoadPeaks(uri string, files []*models.AudioFile, filePath st
 		"--input-filename", filePath,
 		"--output-filename", peakPath,
 		"--output-format", "dat",
+                "--bits", "8",
 	)
 	if err := cmd.Run(); err != nil {
 		log.WithError(err).Fatal()
