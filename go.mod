@@ -17,7 +17,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
-	go.mongodb.org/mongo-driver v1.4.2 // indirect
+	go.mongodb.org/mongo-driver v1.5.1 // indirect
 	golang.org/x/net v0.0.0-20201024042810-be3efd7ff127 // indirect
 	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect
 )
